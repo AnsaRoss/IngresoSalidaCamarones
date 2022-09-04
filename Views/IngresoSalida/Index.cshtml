@@ -1,0 +1,279 @@
+﻿<div>
+    <div>
+        <label class="text-center">Camaronera Sandra</label>
+    </div>
+    <div>
+        <button class="btn btn-success btn-sm" type="button" onclick="GuardarProducto()">Guardar </button>
+        <button class="btn btn-info btn-sm" type="button" onclick="Listado()">Consultar </button>
+        <button class="btn btn-warning btn-sm" type="button" onclick="Salida()">SalidaPRoducto </button>
+    </div>
+    <div>
+        <div class="card-body">
+            <div class="card-datable table-responsive">
+                <table id="tablaListado" class="table table-danger" width="100%">
+                    <thead>
+                        <tr>
+                            <th>id</th>
+                            <th>Nombre</th>
+                            <th>Descripcion</th>
+                            <th>Cantidad</th>
+                            <th>Accion</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal inmodal" id="MyModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content animated bounceInRight" style="width:100%">
+            <div class="modal-body">
+                <div class="row">
+                    <center><h5 style="color:black"><strong>Información del camaron</strong></h5></center>
+                    <div class="col-sm-12">
+                        <div class="col-md-3 text-dark small">Nombre:</div>
+                        <div class="col-md-8">
+                            <input type="text" id="txtNombre" autocomplete="off" class="form-control form-control-sm" />
+                        </div>
+                        <div class="col-md-3 text-dark small">Descripcion:</div>
+                        <div class="col-md-8">
+                            <input type="text" id="txtDescripcion" autocomplete="off" class="form-control form-control-sm" />
+                        </div>
+                        <div class="col-md-3 text-dark small">Cantidad:</div>
+                        <div class="col-md-8">
+                            <input type="text" id="txtCantidad" autocomplete="off" class="form-control form-control-sm" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="float:right !important">
+                <button id="BtnGuardar" style="display:none" runat="server" class="btn btn-success btn-sm" type="button" onclick="Guardar()">Guardar </button>
+                <button id="BtnEditar" style="display:none" runat="server" class="btn btn-success btn-sm" type="button" onclick="Editar()">Editar </button>
+                <button id="BtnCerrar" runat="server" class="btn btn-danger btn-sm" type="button" onclick="CerrarModal()">Cerrar </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal inmodal" id="MyModalSalida" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content animated bounceInRight" style="width:100%">
+            <div class="modal-body">
+                <div class="row">
+                    <center><h5 style="color:black"><strong>Salida del producto</strong></h5></center>
+                    <div class="col-sm-12">
+                        <div class="col-md-3 text-dark small">Nombre:</div>
+                        <div class="col-md-8">
+                            <select id="cmbCamaron" class="form-control form-control-sm">
+                                <option value="0">--Seleccione--</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 text-dark small">Cantidad:</div>
+                        <div class="col-md-8">
+                            <input type="text" id="txtCantidadSalida" autocomplete="off" class="form-control form-control-sm" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="float:right !important">
+                <button id="BtnGuardar" runat="server" class="btn btn-success btn-sm" type="button" onclick="GuardarSalida()">Guardar </button>
+                <button id="BtnCerrar" runat="server" class="btn btn-danger btn-sm" type="button" data-dismiss="modal">Cerrar </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+
+
+    <script type="text/javascript">
+        var tableListado;
+        var idRegistro;
+
+        $(document).ready(function () {
+            $("#tablaListado").css("font-size", "9pt");
+            Listado();
+        });
+
+        function ListarProducto() {
+            jQuery.ajax({
+                type: "POST",
+                url: "@Url.Action("ListarProducto","IngresoSalida")",
+                data: {
+                },
+                success: function (results) {
+                    $("#cmbCamaron").empty().append("<option value=0 selected>--Seleccione--</option>");
+                    $(results).each(function () {
+                        var option = $(document.createElement("option"));
+                        option.val(this.id);
+                        option.text(this.nombre);
+                        $("#cmbCamaron").append(option);
+                    })
+                }
+            })
+        }
+
+        function Listado() {
+            jQuery.ajax({
+                type: "POST",
+                url: "@Url.Action("Listado","IngresoSalida")",
+                data: {
+
+                },
+                success: function (results) {
+                    tableListado = $("#tablaListado").DataTable({
+                        data: results,
+                        destroy: true,
+                        deferRender: true,
+                        select: true,
+                        scroller: true,
+                        scrollCollapse: true,
+                        scrollX: true,
+                        scrollY: 500,
+                        paging: true,
+                        pageLength: 100,
+                        searching: false,
+                        showNEntries: false,
+                        responsive: true,
+                        "ordering": true,
+                        dom: '<"html5buttons"B>lTfgitp',
+                        "bLengthChange": false,
+                        buttons: [
+                            {
+                                extend: 'excel',
+
+                            }
+                        ],
+                        columns: [
+                            { data: "id" },
+                            { data: "nombre" },
+                            { data: "descripcion" },
+                            { data: "cantidad" },
+                            {
+                                data: "id",
+                                "render": function (data, type, row) {
+                                    return '<a class="btn-sm"  onclick="AbriModalEditar(' + row.id + ')">Editar</a>';
+                                }
+                            }
+                        ]
+                    });
+                }
+            })
+            }
+
+        function AbriModalEditar(id) {
+
+
+            $("#MyModal").show();
+            idRegistro = id;
+            ObtenerInformacionCamaron(id);
+            document.getElementById('BtnEditar').style.display = 'block';
+            document.getElementById('BtnGuardar').style.display = 'none';
+
+        }
+
+        function Salida() {
+            $("#MyModalSalida").show();
+            ListarProducto();
+        }
+
+        function GuardarProducto() {
+            $("#MyModal").show();
+            document.getElementById('BtnEditar').style.display = 'none';
+            document.getElementById('BtnGuardar').style.display = 'block';
+
+        }
+
+        function ObtenerInformacionCamaron(id) {
+            jQuery.ajax({
+                type: "POST",
+                url: "@Url.Action("ObtenerInformacionCamaron", "IngresoSalida")",
+                data: {
+                    id: id
+                },
+                success: function (results) {
+                    console.log(results);
+                    $("#txtNombre").val(results.nombre);
+                    $("#txtDescripcion").val(results.descripcion);
+                    $("#txtCantidad").val(results.cantidad);
+                }
+            })
+        }
+
+        function Editar() {
+            var nombre = $("#txtNombre").val();
+            var descripcion = $("#txtDescripcion").val();
+            var cantidad = $("#txtCantidad").val();
+            jQuery.ajax({
+                type: "POST",
+                url: "@Url.Action("Editar","IngresoSalida")",
+                data: {
+                    id: idRegistro,
+                    nombre: nombre,
+                    descripcion: descripcion,
+                    cantidad: cantidad
+                },
+                success: function (results) {
+                    console.log(results);
+                    alert(results)
+                    CerrarModal();
+                    Listado();
+                }
+            })
+        }
+
+        function Guardar() {
+            var nombre = $("#txtNombre").val();
+            var descripcion = $("#txtDescripcion").val();
+            var cantidad=$("#txtCantidad").val();
+
+            jQuery.ajax({
+                type: "POST",
+                url: "@Url.Action("Guardar", "IngresoSalida")",
+                data: {
+                    nombre: nombre,
+                    descripcion: descripcion,
+                    cantidad: cantidad
+                },
+                success: function (results) {
+                    console.log(results);
+                    alert(results)
+                    $("#MyModal").hide();
+                    Listado();
+                }
+            })
+        }
+
+        function GuardarSalida() {
+            var id = $("#cmbCamaron").val();
+            var cantidad = $("#txtCantidadSalida").val();
+
+            jQuery.ajax({
+                type: "POST",
+                url: "@Url.Action("RegitrarSalida", "IngresoSalida")",
+                data: {
+                    cantidad: cantidad,
+                    id: id,
+                },
+                success: function (results) {
+                    console.log(results);
+                    alert(results)
+                    CerrarModal2();
+                    Listado();
+                }
+            })
+        }
+
+        function CerrarModal() {
+            $("#MyModal").hide();
+        }
+
+        function CerrarModal2() {
+            $("#MyModalSalida").hide();
+        }
+
+    </script>
+}
